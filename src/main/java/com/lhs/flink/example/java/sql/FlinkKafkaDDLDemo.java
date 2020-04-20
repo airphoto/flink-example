@@ -28,12 +28,12 @@ public class FlinkKafkaDDLDemo {
 
         String createTable = "create table wordCount(name varchar,score bigint) " +
                 "WITH('connector.type' = 'kafka', " +
-                "'connector.version' = '10'," +
+                "'connector.version' = '0.10'," +
                 "'connector.topic' = 'flink', " +
-                "'connector.property-version' = '1', " +
-                "'connector.startup-mode' = 'latest-offset'," +
                 "'connector.properties.0.key' = 'bootstrap.servers'," +
                 "'connector.properties.0.value' = 'localhost:9092'," +
+                "'connector.properties.1.key' = 'zookeeper.connect'," +
+                "'connector.properties.1.value' = 'localhost:2181'," +
                 "'format.derive-schema' = 'true'," +
                 "'update-mode' = 'append'," +
                 "'format.type' = 'json')";
@@ -42,7 +42,7 @@ public class FlinkKafkaDDLDemo {
         for (String t:tableEnv.listTables()){
             System.out.println(t);
         }
-        String query = "select name,sum(score) as score from wordCount group by name";
+        String query = "select * from wordCount";
 
         Table sqlQuery = tableEnv.sqlQuery(query);
 

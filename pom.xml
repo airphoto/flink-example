@@ -10,7 +10,7 @@
 
 
     <properties>
-        <flink.version>1.9.2</flink.version>
+        <flink.version>1.10.0</flink.version>
         <fastjson.version>1.2.31</fastjson.version>
     </properties>
 
@@ -50,6 +50,12 @@
 
         <dependency>
             <groupId>org.apache.flink</groupId>
+            <artifactId>flink-table-planner_2.11</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.flink</groupId>
             <artifactId>flink-table-api-java-bridge_2.11</artifactId>
             <version>${flink.version}</version>
         </dependency>
@@ -82,6 +88,12 @@
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-queryable-state-client-java</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-json</artifactId>
             <version>${flink.version}</version>
         </dependency>
 
