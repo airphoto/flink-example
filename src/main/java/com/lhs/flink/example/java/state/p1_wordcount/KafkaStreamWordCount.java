@@ -24,7 +24,7 @@ public class KafkaStreamWordCount {
     public static void main(String[] args) throws Exception {
         Configuration configuration = new Configuration();
         //web地址 http://localhost:8081/#/overview
-        StreamExecutionEnvironment env = LocalStreamEnvironment.createLocalEnvironmentWithWebUI(configuration);
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
         env.setStreamTimeCharacteristic(TimeCharacteristic.ProcessingTime);
 
@@ -33,7 +33,7 @@ public class KafkaStreamWordCount {
         properties.setProperty("bootstrap.servers","localhost:9092");
         properties.setProperty("group.id","flink_group");
 
-        FlinkKafkaConsumer010<String> source = new FlinkKafkaConsumer010<String>("canal", new SimpleStringSchema(),properties);
+        FlinkKafkaConsumer010<String> source = new FlinkKafkaConsumer010<String>("flink", new SimpleStringSchema(),properties);
 
         DataStream<String> stream = env.addSource(source);
 

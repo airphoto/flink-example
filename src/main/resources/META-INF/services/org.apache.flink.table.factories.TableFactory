@@ -1,0 +1,2 @@
+com.lhs.flink.example.java.sql.udf.source.MySystemTableSourceFactory
+com.lhs.flink.example.java.sql.formats.json.AJsonRowFormatFactory
