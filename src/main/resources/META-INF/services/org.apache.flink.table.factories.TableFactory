@@ -1,2 +1,3 @@
 com.lhs.flink.example.java.sql.udf.source.MySystemTableSourceFactory
 com.lhs.flink.example.java.sql.formats.json.AJsonRowFormatFactory
+com.lhs.flink.example.java.sql.p1_sources_sinks.factory.RedisStreamTableFactory
