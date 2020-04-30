@@ -16,14 +16,14 @@
  * limitations under the License.
  */
 
-package com.lhs.flink.example.java.sql.formats.json;
+package com.lhs.flink.example.java.sql.formats.binlog;
 
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.api.common.serialization.SerializationSchema;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.table.descriptors.DescriptorProperties;
-import com.lhs.flink.example.java.sql.formats.descriptors.AJsonValidator;
+import com.lhs.flink.example.java.sql.formats.descriptors.LogValidator;
 import org.apache.flink.table.factories.DeserializationSchemaFactory;
 import org.apache.flink.table.factories.SerializationSchemaFactory;
 import org.apache.flink.table.factories.TableFormatFactoryBase;
@@ -37,19 +37,19 @@ import java.util.Map;
  * Table format factory for providing configured instances of JSON-to-row {@link SerializationSchema}
  * and {@link DeserializationSchema}.
  */
-public class AJsonRowFormatFactory extends TableFormatFactoryBase<Row>
+public class LogRowFormatFactory extends TableFormatFactoryBase<Row>
 		implements SerializationSchemaFactory<Row>, DeserializationSchemaFactory<Row> {
 
-	public AJsonRowFormatFactory() {
-		super(AJsonValidator.FORMAT_TYPE_VALUE, 1, true);
+	public LogRowFormatFactory() {
+		super(LogValidator.FORMAT_TYPE_VALUE, 1, true);
 	}
 
 	@Override
 	protected List<String> supportedFormatProperties() {
 		final List<String> properties = new ArrayList<>();
-		properties.add(AJsonValidator.FORMAT_JSON_SCHEMA);
-		properties.add(AJsonValidator.FORMAT_SCHEMA);
-		properties.add(AJsonValidator.FORMAT_FAIL_ON_MISSING_FIELD);
+		properties.add(LogValidator.FORMAT_JSON_SCHEMA);
+		properties.add(LogValidator.FORMAT_SCHEMA);
+		properties.add(LogValidator.FORMAT_FAIL_ON_MISSING_FIELD);
 		return properties;
 	}
 
@@ -58,10 +58,10 @@ public class AJsonRowFormatFactory extends TableFormatFactoryBase<Row>
 		final DescriptorProperties descriptorProperties = getValidatedProperties(properties);
 
 		// create and configure
-		final AJsonRowDeserializationSchema.Builder schema =
-			new AJsonRowDeserializationSchema.Builder(createTypeInformation(descriptorProperties));
+		final LogRowDeserializationSchema.Builder schema =
+			new LogRowDeserializationSchema.Builder(createTypeInformation(descriptorProperties));
 
-		descriptorProperties.getOptionalBoolean(AJsonValidator.FORMAT_FAIL_ON_MISSING_FIELD)
+		descriptorProperties.getOptionalBoolean(LogValidator.FORMAT_FAIL_ON_MISSING_FIELD)
 			.ifPresent(flag -> {
 				if (flag) {
 					schema.failOnMissingField();
@@ -76,14 +76,14 @@ public class AJsonRowFormatFactory extends TableFormatFactoryBase<Row>
 		final DescriptorProperties descriptorProperties = getValidatedProperties(properties);
 
 		// create and configure
-		return (SerializationSchema<Row>) new AJsonRowSerializationSchema.Builder(createTypeInformation(descriptorProperties)).build();
+		return new LogRowSerializationSchema.Builder(createTypeInformation(descriptorProperties)).build();
 	}
 
 	private TypeInformation<Row> createTypeInformation(DescriptorProperties descriptorProperties) {
-		if (descriptorProperties.containsKey(AJsonValidator.FORMAT_SCHEMA)) {
-			return (RowTypeInfo) descriptorProperties.getType(AJsonValidator.FORMAT_SCHEMA);
-		} else if (descriptorProperties.containsKey(AJsonValidator.FORMAT_JSON_SCHEMA)) {
-			return AJsonRowSchemaConverter.convert(descriptorProperties.getString(AJsonValidator.FORMAT_JSON_SCHEMA));
+		if (descriptorProperties.containsKey(LogValidator.FORMAT_SCHEMA)) {
+			return (RowTypeInfo) descriptorProperties.getType(LogValidator.FORMAT_SCHEMA);
+		} else if (descriptorProperties.containsKey(LogValidator.FORMAT_JSON_SCHEMA)) {
+			return LogRowSchemaConverter.convert(descriptorProperties.getString(LogValidator.FORMAT_JSON_SCHEMA));
 		} else {
 			return deriveSchema(descriptorProperties.asMap()).toRowType();
 		}
@@ -94,7 +94,7 @@ public class AJsonRowFormatFactory extends TableFormatFactoryBase<Row>
 		descriptorProperties.putProperties(propertiesMap);
 
 		// validate
-		new AJsonValidator().validate(descriptorProperties);
+		new LogValidator().validate(descriptorProperties);
 
 		return descriptorProperties;
 	}

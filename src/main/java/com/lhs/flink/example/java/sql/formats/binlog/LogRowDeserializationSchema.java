@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.lhs.flink.example.java.sql.formats.json;
+package com.lhs.flink.example.java.sql.formats.binlog;
 
 import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
@@ -26,7 +26,6 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.typeutils.ObjectArrayTypeInfo;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
-import org.apache.flink.formats.json.JsonRowSchemaConverter;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.JsonNode;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,6 +37,13 @@ import org.apache.flink.util.WrappingRuntimeException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
+import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalQueries;
 import java.util.Arrays;
 import java.util.List;
@@ -49,8 +55,8 @@ import static java.lang.String.format;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.util.Spliterators.spliterator;
 import static java.util.stream.StreamSupport.stream;
-//import static org.apache.flink.formats.json.TimeFormats.RFC3339_TIMESTAMP_FORMAT;
-//import static org.apache.flink.formats.json.TimeFormats.RFC3339_TIME_FORMAT;
+import static com.lhs.flink.example.java.sql.formats.binlog.LogTimeFormat.RFC3339_TIME_FORMAT;
+import static com.lhs.flink.example.java.sql.formats.binlog.LogTimeFormat.RFC3339_TIMESTAMP_FORMAT;
 import static org.apache.flink.util.Preconditions.checkArgument;
 import static org.apache.flink.util.Preconditions.checkNotNull;
 
@@ -63,7 +69,7 @@ import static org.apache.flink.util.Preconditions.checkNotNull;
  * <p>Failures during deserialization are forwarded as wrapped IOExceptions.
  */
 @PublicEvolving
-public class AJsonRowDeserializationSchema implements DeserializationSchema<Row> {
+public class LogRowDeserializationSchema implements DeserializationSchema<Row> {
 
 	private static final long serialVersionUID = -228294330688809195L;
 
@@ -77,7 +83,7 @@ public class AJsonRowDeserializationSchema implements DeserializationSchema<Row>
 
 	private DeserializationRuntimeConverter runtimeConverter;
 
-	private AJsonRowDeserializationSchema(
+	private LogRowDeserializationSchema(
 			TypeInformation<Row> typeInfo,
 			boolean failOnMissingField) {
 		checkNotNull(typeInfo, "Type information");
@@ -91,7 +97,7 @@ public class AJsonRowDeserializationSchema implements DeserializationSchema<Row>
 	 * @deprecated Use the provided {@link Builder} instead.
 	 */
 	@Deprecated
-	public AJsonRowDeserializationSchema(TypeInformation<Row> typeInfo) {
+	public LogRowDeserializationSchema(TypeInformation<Row> typeInfo) {
 		this(typeInfo, false);
 	}
 
@@ -99,8 +105,8 @@ public class AJsonRowDeserializationSchema implements DeserializationSchema<Row>
 	 * @deprecated Use the provided {@link Builder} instead.
 	 */
 	@Deprecated
-	public AJsonRowDeserializationSchema(String jsonSchema) {
-		this(JsonRowSchemaConverter.convert(checkNotNull(jsonSchema)), false);
+	public LogRowDeserializationSchema(String jsonSchema) {
+		this(LogRowSchemaConverter.convert(checkNotNull(jsonSchema)), false);
 	}
 
 	/**
@@ -133,9 +139,6 @@ public class AJsonRowDeserializationSchema implements DeserializationSchema<Row>
 		return typeInfo;
 	}
 
-	/**
-	 * Builder for {@link AJsonRowDeserializationSchema}.
-	 */
 	public static class Builder {
 
 		private final RowTypeInfo typeInfo;
@@ -160,7 +163,7 @@ public class AJsonRowDeserializationSchema implements DeserializationSchema<Row>
 		 * @see <a href="http://json-schema.org/">http://json-schema.org/</a>
 		 */
 		public Builder(String jsonSchema) {
-			this(JsonRowSchemaConverter.convert(checkNotNull(jsonSchema)));
+			this(LogRowSchemaConverter.convert(checkNotNull(jsonSchema)));
 		}
 
 		/**
@@ -173,8 +176,8 @@ public class AJsonRowDeserializationSchema implements DeserializationSchema<Row>
 			return this;
 		}
 
-		public AJsonRowDeserializationSchema build() {
-			return new AJsonRowDeserializationSchema(typeInfo, failOnMissingField);
+		public LogRowDeserializationSchema build() {
+			return new LogRowDeserializationSchema(typeInfo, failOnMissingField);
 		}
 	}
 
@@ -186,7 +189,7 @@ public class AJsonRowDeserializationSchema implements DeserializationSchema<Row>
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
-		final AJsonRowDeserializationSchema that = (AJsonRowDeserializationSchema) o;
+		final LogRowDeserializationSchema that = (LogRowDeserializationSchema) o;
 		return Objects.equals(typeInfo, that.typeInfo) &&
 			Objects.equals(failOnMissingField, that.failOnMissingField);
 	}
@@ -305,10 +308,10 @@ public class AJsonRowDeserializationSchema implements DeserializationSchema<Row>
 			return Optional.of((mapper, jsonNode) -> jsonNode.bigIntegerValue());
 		} else if (simpleTypeInfo == Types.SQL_DATE) {
 			return Optional.of(createDateConverter());
-//		} else if (simpleTypeInfo == Types.SQL_TIME) {
-//			return Optional.of(createTimeConverter());
-//		} else if (simpleTypeInfo == Types.SQL_TIMESTAMP) {
-//			return Optional.of(createTimestampConverter());
+		} else if (simpleTypeInfo == Types.SQL_TIME) {
+			return Optional.of(createTimeConverter());
+		} else if (simpleTypeInfo == Types.SQL_TIMESTAMP) {
+			return Optional.of(createTimestampConverter());
 		} else {
 			return Optional.empty();
 		}
@@ -319,47 +322,47 @@ public class AJsonRowDeserializationSchema implements DeserializationSchema<Row>
 			.query(TemporalQueries.localDate()));
 	}
 
-//	private DeserializationRuntimeConverter createTimestampConverter() {
-//		return (mapper, jsonNode) -> {
-//			// according to RFC 3339 every date-time must have a timezone;
-//			// until we have full timezone support, we only support UTC;
-//			// users can parse their time as string as a workaround
-//			TemporalAccessor parsedTimestamp = RFC3339_TIMESTAMP_FORMAT.parse(jsonNode.asText());
-//
-//			ZoneOffset zoneOffset = parsedTimestamp.query(TemporalQueries.offset());
-//
-//			if (zoneOffset != null && zoneOffset.getTotalSeconds() != 0) {
-//				throw new IllegalStateException(
-//					"Invalid timestamp format. Only a timestamp in UTC timezone is supported yet. " +
-//						"Format: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-//			}
-//
-//			LocalTime localTime = parsedTimestamp.query(TemporalQueries.localTime());
-//			LocalDate localDate = parsedTimestamp.query(TemporalQueries.localDate());
-//
-//			return Timestamp.valueOf(LocalDateTime.of(localDate, localTime));
-//		};
-//	}
+	private DeserializationRuntimeConverter createTimestampConverter() {
+		return (mapper, jsonNode) -> {
+			// according to RFC 3339 every date-time must have a timezone;
+			// until we have full timezone support, we only support UTC;
+			// users can parse their time as string as a workaround
+			TemporalAccessor parsedTimestamp = RFC3339_TIMESTAMP_FORMAT.parse(jsonNode.asText());
 
-//	private DeserializationRuntimeConverter createTimeConverter() {
-//		return (mapper, jsonNode) -> {
-//
-//			// according to RFC 3339 every full-time must have a timezone;
-//			// until we have full timezone support, we only support UTC;
-//			// users can parse their time as string as a workaround
-//			TemporalAccessor parsedTime = RFC3339_TIME_FORMAT.parse(jsonNode.asText());
-//
-//			ZoneOffset zoneOffset = parsedTime.query(TemporalQueries.offset());
-//			LocalTime localTime = parsedTime.query(TemporalQueries.localTime());
-//
-//			if (zoneOffset != null && zoneOffset.getTotalSeconds() != 0 || localTime.getNano() != 0) {
-//				throw new IllegalStateException(
-//					"Invalid time format. Only a time in UTC timezone without milliseconds is supported yet.");
-//			}
-//
-//			return Time.valueOf(localTime);
-//		};
-//	}
+			ZoneOffset zoneOffset = parsedTimestamp.query(TemporalQueries.offset());
+
+			if (zoneOffset != null && zoneOffset.getTotalSeconds() != 0) {
+				throw new IllegalStateException(
+					"Invalid timestamp format. Only a timestamp in UTC timezone is supported yet. " +
+						"Format: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+			}
+
+			LocalTime localTime = parsedTimestamp.query(TemporalQueries.localTime());
+			LocalDate localDate = parsedTimestamp.query(TemporalQueries.localDate());
+
+			return Timestamp.valueOf(LocalDateTime.of(localDate, localTime));
+		};
+	}
+
+	private DeserializationRuntimeConverter createTimeConverter() {
+		return (mapper, jsonNode) -> {
+
+			// according to RFC 3339 every full-time must have a timezone;
+			// until we have full timezone support, we only support UTC;
+			// users can parse their time as string as a workaround
+			TemporalAccessor parsedTime = RFC3339_TIME_FORMAT.parse(jsonNode.asText());
+
+			ZoneOffset zoneOffset = parsedTime.query(TemporalQueries.offset());
+			LocalTime localTime = parsedTime.query(TemporalQueries.localTime());
+
+			if (zoneOffset != null && zoneOffset.getTotalSeconds() != 0 || localTime.getNano() != 0) {
+				throw new IllegalStateException(
+					"Invalid time format. Only a time in UTC timezone without milliseconds is supported yet.");
+			}
+
+			return Time.valueOf(localTime);
+		};
+	}
 
 	private DeserializationRuntimeConverter assembleRowConverter(
 		String[] fieldNames,

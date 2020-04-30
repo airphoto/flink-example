@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.lhs.flink.example.java.sql.formats.json;
+package com.lhs.flink.example.java.sql.formats.binlog;
 
 import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.api.common.serialization.SerializationSchema;
@@ -38,6 +38,8 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -46,8 +48,8 @@ import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
-//import static org.apache.flink.formats.json.TimeFormats.RFC3339_TIMESTAMP_FORMAT;
-//import static org.apache.flink.formats.json.TimeFormats.RFC3339_TIME_FORMAT;
+import static com.lhs.flink.example.java.sql.formats.binlog.LogTimeFormat.RFC3339_TIME_FORMAT;
+import static com.lhs.flink.example.java.sql.formats.binlog.LogTimeFormat.RFC3339_TIMESTAMP_FORMAT;
 import static org.apache.flink.util.Preconditions.checkArgument;
 import static org.apache.flink.util.Preconditions.checkNotNull;
 
@@ -57,10 +59,9 @@ import static org.apache.flink.util.Preconditions.checkNotNull;
  * <p>Serializes the input Flink object into a JSON string and
  * converts it into <code>byte[]</code>.
  *
- * <p>Result <code>byte[]</code> messages can be deserialized using {@link AJsonRowDeserializationSchema}.
  */
 @PublicEvolving
-public class AJsonRowSerializationSchema implements SerializationSchema<Row> {
+public class LogRowSerializationSchema implements SerializationSchema<Row> {
 
 	private static final long serialVersionUID = -2885556750743978636L;
 
@@ -79,7 +80,7 @@ public class AJsonRowSerializationSchema implements SerializationSchema<Row> {
 	 * @deprecated Use the provided {@link Builder} instead.
 	 */
 	@Deprecated
-	public AJsonRowSerializationSchema(TypeInformation<Row> typeInfo) {
+	public LogRowSerializationSchema(TypeInformation<Row> typeInfo) {
 		// TODO make this constructor private in the future
 		Preconditions.checkNotNull(typeInfo, "Type information");
 		Preconditions.checkArgument(typeInfo instanceof RowTypeInfo, "Only RowTypeInfo is supported");
@@ -87,9 +88,6 @@ public class AJsonRowSerializationSchema implements SerializationSchema<Row> {
 		this.runtimeConverter = createConverter(typeInfo);
 	}
 
-	/**
-	 * Builder for {@link AJsonRowDeserializationSchema}.
-	 */
 	@PublicEvolving
 	public static class Builder {
 
@@ -114,11 +112,11 @@ public class AJsonRowSerializationSchema implements SerializationSchema<Row> {
 		 * @see <a href="http://json-schema.org/">http://json-schema.org/</a>
 		 */
 		public Builder(String jsonSchema) {
-			this(AJsonRowSchemaConverter.convert(checkNotNull(jsonSchema)));
+			this(LogRowSchemaConverter.convert(checkNotNull(jsonSchema)));
 		}
 
-		public AJsonRowDeserializationSchema build() {
-			return new AJsonRowDeserializationSchema(typeInfo);
+		public LogRowSerializationSchema build() {
+			return new LogRowSerializationSchema(typeInfo);
 		}
 	}
 
@@ -137,17 +135,17 @@ public class AJsonRowSerializationSchema implements SerializationSchema<Row> {
 		}
 	}
 
-//	@Override
-//	public boolean equals(Object o) {
-//		if (this == o) {
-//			return true;
-//		}
-//		if (o == null || getClass() != o.getClass()) {
-//			return false;
-//		}
-//		final AJsonRowDeserializationSchema that = (AJsonRowDeserializationSchema) o;
-//		return false;
-//	}
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		final LogRowSerializationSchema that = (LogRowSerializationSchema) o;
+		return Objects.equals(typeInfo, that.typeInfo);
+	}
 
 	@Override
 	public int hashCode() {
@@ -253,10 +251,10 @@ public class AJsonRowSerializationSchema implements SerializationSchema<Row> {
 			return Optional.of(createBigIntegerConverter());
 		} else if (simpleTypeInfo == Types.SQL_DATE) {
 			return Optional.of(createDateConverter());
-//		} else if (simpleTypeInfo == Types.SQL_TIME) {
-//			return Optional.of(createTimeConverter());
-//		} else if (simpleTypeInfo == Types.SQL_TIMESTAMP) {
-//			return Optional.of(createTimestampConverter());
+		} else if (simpleTypeInfo == Types.SQL_TIME) {
+			return Optional.of(createTimeConverter());
+		} else if (simpleTypeInfo == Types.SQL_TIMESTAMP) {
+			return Optional.of(createTimestampConverter());
 		} else {
 			return Optional.empty();
 		}
@@ -270,23 +268,23 @@ public class AJsonRowSerializationSchema implements SerializationSchema<Row> {
 		};
 	}
 
-//	private SerializationRuntimeConverter createTimestampConverter() {
-//		return (mapper, reuse, object) -> {
-//			Timestamp timestamp = (Timestamp) object;
-//
-//			return mapper.getNodeFactory()
-//				.textNode(RFC3339_TIMESTAMP_FORMAT.format(timestamp.toLocalDateTime()));
-//		};
-//	}
+	private SerializationRuntimeConverter createTimestampConverter() {
+		return (mapper, reuse, object) -> {
+			Timestamp timestamp = (Timestamp) object;
 
-//	private SerializationRuntimeConverter createTimeConverter() {
-//		return (mapper, reuse, object) -> {
-//			final Time time = (Time) object;
-//
-//			JsonNodeFactory nodeFactory = mapper.getNodeFactory();
-//			return nodeFactory.textNode(RFC3339_TIME_FORMAT.format(time.toLocalTime()));
-//		};
-//	}
+			return mapper.getNodeFactory()
+				.textNode(RFC3339_TIMESTAMP_FORMAT.format(timestamp.toLocalDateTime()));
+		};
+	}
+
+	private SerializationRuntimeConverter createTimeConverter() {
+		return (mapper, reuse, object) -> {
+			final Time time = (Time) object;
+
+			JsonNodeFactory nodeFactory = mapper.getNodeFactory();
+			return nodeFactory.textNode(RFC3339_TIME_FORMAT.format(time.toLocalTime()));
+		};
+	}
 
 	private SerializationRuntimeConverter createBigDecimalConverter() {
 		return (mapper, reuse, object) -> {

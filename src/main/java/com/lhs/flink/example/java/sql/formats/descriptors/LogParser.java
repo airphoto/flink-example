@@ -28,12 +28,12 @@ import org.apache.flink.util.Preconditions;
 import java.util.Map;
 
 import static org.apache.flink.table.descriptors.FormatDescriptorValidator.FORMAT_DERIVE_SCHEMA;
-import static com.lhs.flink.example.java.sql.formats.descriptors.AJsonValidator.*;
+import static com.lhs.flink.example.java.sql.formats.descriptors.LogValidator.*;
 
 /**
   * Format descriptor for JSON.
   */
-public class AJson extends FormatDescriptor {
+public class LogParser extends FormatDescriptor {
 
 	private Boolean failOnMissingField;
 	private Boolean deriveSchema;
@@ -43,7 +43,7 @@ public class AJson extends FormatDescriptor {
 	/**
 	  * Format descriptor for JSON.
 	  */
-	public AJson() {
+	public LogParser() {
 		super(FORMAT_TYPE_VALUE, 1);
 	}
 
@@ -53,7 +53,7 @@ public class AJson extends FormatDescriptor {
 	 * @param failOnMissingField If set to true, the operation fails if there is a missing field.
 	 *                           If set to false, a missing field is set to null.
 	 */
-	public AJson failOnMissingField(boolean failOnMissingField) {
+	public LogParser failOnMissingField(boolean failOnMissingField) {
 		this.failOnMissingField = failOnMissingField;
 		return this;
 	}
@@ -66,7 +66,7 @@ public class AJson extends FormatDescriptor {
 	 *
 	 * @param jsonSchema JSON schema
 	 */
-	public AJson jsonSchema(String jsonSchema) {
+	public LogParser jsonSchema(String jsonSchema) {
 		Preconditions.checkNotNull(jsonSchema);
 		this.jsonSchema = jsonSchema;
 		this.schema = null;
@@ -83,7 +83,7 @@ public class AJson extends FormatDescriptor {
 	 *
 	 * @param schemaType type information that describes the schema
 	 */
-	public AJson schema(TypeInformation<Row> schemaType) {
+	public LogParser schema(TypeInformation<Row> schemaType) {
 		Preconditions.checkNotNull(schemaType);
 		this.schema = TypeStringUtils.writeTypeInfo(schemaType);
 		this.jsonSchema = null;
@@ -100,7 +100,7 @@ public class AJson extends FormatDescriptor {
 	 * schema. Time attributes are ignored if their origin is not a field. A "from" definition
 	 * is interpreted as a field renaming in the format.
 	 */
-	public AJson deriveSchema() {
+	public LogParser deriveSchema() {
 		this.deriveSchema = true;
 		this.schema = null;
 		this.jsonSchema = null;

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.lhs.flink.example.java.sql.formats.json;
+package com.lhs.flink.example.java.sql.formats.binlog;
 
 import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.api.common.serialization.AbstractDeserializationSchema;
@@ -30,7 +30,7 @@ import java.io.IOException;
  * <p>Fields can be accessed by calling objectNode.get(&lt;name>).as(&lt;type>)
  */
 @PublicEvolving
-public class AJsonNodeDeserializationSchema extends AbstractDeserializationSchema<ObjectNode> {
+public class LogNodeDeserializationSchema extends AbstractDeserializationSchema<ObjectNode> {
 
 	private static final long serialVersionUID = -1699854177598621044L;
 
