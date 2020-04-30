@@ -1,7 +1,9 @@
 package com.lhs.flink.example.java.sql.p1_sources_sinks.sink;
 
+import com.lhs.flink.example.java.state.sink.RedisSinkInstance;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.DataStreamSink;
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.sinks.AppendStreamTableSink;
@@ -16,6 +18,14 @@ import org.apache.flink.types.Row;
  **/
 public class RedisAppendStreamTableSink implements AppendStreamTableSink<Row> {
     private TableSchema schema;
+
+    public RedisAppendStreamTableSink(){
+        TableSchema.Builder field = TableSchema.builder()
+                .field("k", DataTypes.STRING())
+                .field("f", DataTypes.STRING())
+                .field("v", DataTypes.STRING());
+        this.schema = field.build();
+    }
     @Override
     public void emitDataStream(DataStream<Row> dataStream) {
         dataStream.print();
@@ -28,16 +38,17 @@ public class RedisAppendStreamTableSink implements AppendStreamTableSink<Row> {
 
     @Override
     public TableSchema getTableSchema() {
-        TableSchema.Builder field = TableSchema.builder()
-                .field("k", DataTypes.STRING())
-                .field("f", DataTypes.STRING())
-                .field("v", DataTypes.STRING());
-        schema = field.build();
         return schema;
     }
 
     @Override
     public DataType getConsumedDataType() {
         return schema.toRowDataType();
+    }
+
+    @Override
+    public DataStreamSink<?> consumeDataStream(DataStream<Row> dataStream) {
+        System.out.println("consumeDataStream");
+        return dataStream.addSink(new RedisSinkInstance<>());
     }
 }

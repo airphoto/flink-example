@@ -120,13 +120,14 @@ public class LogRowDeserializationSchema implements DeserializationSchema<Row> {
 	}
 
 	@Override
-	public Row deserialize(byte[] message) throws IOException {
+	public Row deserialize(byte[] message){
 		try {
 			final JsonNode root = objectMapper.readTree(message);
 			return (Row) runtimeConverter.convert(objectMapper, root);
-		} catch (Throwable t) {
-			throw new IOException("Failed to deserialize JSON object.", t);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
+		return null;
 	}
 
 	@Override

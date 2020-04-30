@@ -23,7 +23,7 @@ public class SQLJob {
 
         TableEnvironment tableEnvironment = TableEnvironment.create(settings);
 
-        List<String> allLines = Files.readAllLines(Paths.get("E:\\idea\\git\\flink\\src\\main\\resources\\q1.sql"));
+        List<String> allLines = Files.readAllLines(Paths.get("E:\\idea\\git\\flink\\src\\main\\resources\\q3.sql"));
 
         String[] lines = allLines.stream().filter((str)->!str.contains("--")).reduce((x1,y1)-> x1.trim()+" "+y1.trim()).get().split(";");
 
