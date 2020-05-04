@@ -1,4 +1,4 @@
-package com.lhs.flink.example.java.sql.p1_sources_sinks.sink;
+package com.lhs.flink.example.java.sql.p1_sources_sinks.redis.sink;
 
 import com.lhs.flink.example.java.state.sink.RedisSinkInstance;
 import org.apache.flink.api.common.typeinfo.TypeInformation;

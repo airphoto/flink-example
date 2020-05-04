@@ -2,8 +2,7 @@ package com.lhs.flink.example.java.sql;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.lhs.flink.example.java.sql.p1_sources_sinks.connector.RedisConnector;
-import com.lhs.flink.example.java.sql.p1_sources_sinks.sink.RedisAppendStreamTableSink;
+import com.lhs.flink.example.java.sql.p1_sources_sinks.redis.connector.RedisConnector;
 import com.lhs.flink.example.java.sql.pojo.RedisCase;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.common.typeinfo.TypeHint;

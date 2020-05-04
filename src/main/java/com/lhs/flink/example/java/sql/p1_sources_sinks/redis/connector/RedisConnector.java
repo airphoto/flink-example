@@ -1,4 +1,4 @@
-package com.lhs.flink.example.java.sql.p1_sources_sinks.connector;
+package com.lhs.flink.example.java.sql.p1_sources_sinks.redis.connector;
 
 import org.apache.flink.table.descriptors.ConnectorDescriptor;
 

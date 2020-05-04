@@ -1,6 +1,6 @@
-package com.lhs.flink.example.java.sql.p1_sources_sinks.factory;
+package com.lhs.flink.example.java.sql.p1_sources_sinks.redis.factory;
 
-import com.lhs.flink.example.java.sql.p1_sources_sinks.sink.RedisAppendStreamTableSink;
+import com.lhs.flink.example.java.sql.p1_sources_sinks.redis.sink.RedisAppendStreamTableSink;
 import org.apache.flink.table.factories.StreamTableSinkFactory;
 import org.apache.flink.table.sinks.StreamTableSink;
 import org.apache.flink.types.Row;
