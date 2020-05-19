@@ -24,12 +24,12 @@ import org.apache.flink.table.descriptors.DescriptorProperties;
 import org.apache.flink.table.descriptors.FormatDescriptorValidator;
 
 /**
-  * Validator for {@link AJson}.
+  * Validator for {@link LogParser}.
   */
 @Internal
-public class AJsonValidator extends FormatDescriptorValidator {
+public class LogValidator extends FormatDescriptorValidator {
 
-	public static final String FORMAT_TYPE_VALUE = "ajson";
+	public static final String FORMAT_TYPE_VALUE = "log_parser";
 	public static final String FORMAT_SCHEMA = "format.schema";
 	public static final String FORMAT_JSON_SCHEMA = "format.json-schema";
 	public static final String FORMAT_FAIL_ON_MISSING_FIELD = "format.fail-on-missing-field";

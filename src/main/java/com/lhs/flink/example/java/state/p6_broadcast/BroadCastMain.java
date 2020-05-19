@@ -46,6 +46,7 @@ public class BroadCastMain {
 
         // 自定义source去连接外部数据源的配置文件
         DataStreamSource<Map<String, JobConfig>> mapDataStreamSource = environment.addSource(new GetJobConfig());
+
         // 广播配置文件
         BroadcastStream<Map<String, JobConfig>> mapBroadcastStream = mapDataStreamSource.broadcast(broadcastState);
 

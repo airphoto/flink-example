@@ -42,11 +42,11 @@ public class FlinkKafkaDDLDemo {
         for (String t:tableEnv.listTables()){
             System.out.println(t);
         }
-        String query = "select * from wordCount";
+        String query = "select name,sum(score) as score from wordCount group by name";
 
         Table sqlQuery = tableEnv.sqlQuery(query);
 
-        tableEnv.toAppendStream(sqlQuery, Row.class).print();
+        tableEnv.toRetractStream(sqlQuery, Row.class).print();
 //
         tableEnv.execute("table env");
 

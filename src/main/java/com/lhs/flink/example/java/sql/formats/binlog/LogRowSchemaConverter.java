@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.lhs.flink.example.java.sql.formats.json;
+package com.lhs.flink.example.java.sql.formats.binlog;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
@@ -41,9 +41,9 @@ import java.util.*;
  * <p>This converter has been developed for JSON Schema draft-07 but also includes keywords of
  * older drafts to be as compatible as possible.
  */
-public final class AJsonRowSchemaConverter {
+public final class LogRowSchemaConverter {
 
-	private AJsonRowSchemaConverter() {
+	private LogRowSchemaConverter() {
 		// private
 	}
 

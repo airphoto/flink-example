@@ -6,6 +6,7 @@ import org.apache.flink.runtime.state.FunctionInitializationContext;
 import org.apache.flink.runtime.state.FunctionSnapshotContext;
 import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
+import org.apache.flink.types.Row;
 
 /**
  * @author lihuasong
@@ -28,7 +29,7 @@ public class RedisSinkInstance<IN> extends RichSinkFunction<IN> implements Check
 
     @Override
     public void invoke(IN value, Context context) throws Exception {
-        System.out.println(((Tuple2<String, Long>) value));
+        System.out.println(value);
     }
 
     @Override

@@ -25,7 +25,8 @@ public class MyKafkaProducer {
 
         while (true){
             long current = System.currentTimeMillis();
-            ProducerRecord<String,String> record1 = new ProducerRecord<>("flink","k1,"+current);
+            String str = "{\"key\":\"key\",\"field\":\"field\",\"value\":\"value\",\"time\":\""+current+"\"}";
+            ProducerRecord<String,String> record1 = new ProducerRecord<>("flink",str);
             producer.send(record1);
             System.out.println("k1,"+current);
             Thread.sleep(1000L);
